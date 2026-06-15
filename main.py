@@ -41,16 +41,10 @@ def _find_and_activate_window():
     if found_hwnd:
         hwnd = found_hwnd[0]
         SW_RESTORE = 9
-        HWND_TOPMOST = -1
-        HWND_NOTOPMOST = -2
-        SWP_NOMOVE = 0x0002
-        SWP_NOSIZE = 0x0001
 
         user32.ShowWindow(hwnd, SW_RESTORE)
-        # TOPMOST trick: briefly set as topmost then remove, to bypass foreground lock
-        user32.SetWindowPos(hwnd, HWND_TOPMOST, 0, 0, 0, 0, SWP_NOMOVE | SWP_NOSIZE)
-        user32.SetWindowPos(hwnd, HWND_NOTOPMOST, 0, 0, 0, 0, SWP_NOMOVE | SWP_NOSIZE)
         user32.SetForegroundWindow(hwnd)
+        user32.BringWindowToTop(hwnd)
         return True
     return False
 

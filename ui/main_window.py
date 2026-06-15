@@ -970,10 +970,10 @@ class MainWindow(QMainWindow):
             try:
                 hwnd = int(self.winId())
                 ctypes.windll.user32.ShowWindow(hwnd, 9)
-                ctypes.windll.user32.SetWindowPos(hwnd, -1, 0, 0, 0, 0, 0x0001 | 0x0002)
-                ctypes.windll.user32.SetWindowPos(hwnd, -2, 0, 0, 0, 0, 0x0001 | 0x0002)
                 ctypes.windll.user32.SetForegroundWindow(hwnd)
+                ctypes.windll.user32.BringWindowToTop(hwnd)
             except Exception:
+                pass
                 pass
         if self.floating_button:
             self.floating_button.set_backup_failed(False)
