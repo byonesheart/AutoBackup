@@ -1,4 +1,4 @@
-﻿"""AutoBackup v1.0.2 备份引擎"""
+﻿"""AutoBackup v1.1.0 备份引擎"""
 import os
 import zipfile
 from datetime import datetime

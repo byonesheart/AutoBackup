@@ -1,4 +1,4 @@
-﻿"""AutoBackup v1.0.2 入口"""
+﻿"""AutoBackup v1.1.0 入口"""
 import sys
 import os
 import time

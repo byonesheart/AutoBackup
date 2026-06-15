@@ -1,4 +1,4 @@
-﻿"""AutoBackup v1.0.2 悬浮按钮"""
+﻿"""AutoBackup v1.1.0 悬浮按钮"""
 from PySide6.QtWidgets import QWidget, QApplication, QMenu
 from PySide6.QtCore import Qt, QPoint, QPropertyAnimation, QEasingCurve
 from PySide6.QtGui import QPainter, QColor, QBrush, QPen, QCursor

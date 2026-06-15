@@ -1,4 +1,4 @@
-﻿"""AutoBackup v1.0.2 主窗口"""
+﻿"""AutoBackup v1.1.0 主窗口"""
 import ctypes
 import os
 import sys
@@ -37,7 +37,7 @@ class MainWindow(QMainWindow):
         self._scheduler_menu_action = None
         self._show_password = False
 
-        self.setWindowTitle("AutoBackup v1.0.2")
+        self.setWindowTitle("AutoBackup v1.1.0")
         self.setMinimumSize(680, 600)
         self._restore_geometry()
 
@@ -600,7 +600,7 @@ class MainWindow(QMainWindow):
         else:
             QMessageBox.critical(self, "恢复失败", f"恢复失败：\n{error}")
 
-    def _do_backup(self):
+    def _do_backup(self, source="手动"):
         self.backup_btn.setEnabled(False)
         self.backup_btn.setText("备份中...")
         self._refresh_source_table()
@@ -626,7 +626,8 @@ class MainWindow(QMainWindow):
                         "error": result.get("error", ""),
                         "time": datetime.now().strftime("%Y-%m-%d %H:%M:%S"),
                         "encrypted": password is not None,
-                        "password": password or ""
+                        "password": password or "",
+                        "source": source
                     })
                 self_thread.finished.emit()
 
@@ -738,6 +739,7 @@ class MainWindow(QMainWindow):
             encrypted = entry.get("encrypted", False)
             if entry.get("success", False):
                 result_text = "成功"
+                source = entry.get("source", "手动")
                 detail_parts = []
                 if encrypted:
                     if self._show_password:
@@ -750,7 +752,7 @@ class MainWindow(QMainWindow):
                         detail_parts.append("已加密")
                 if skipped:
                     detail_parts.append(f"跳过 {len(skipped)} 个锁定文件")
-                detail_text = "，".join(detail_parts) if detail_parts else ""
+                detail_parts.append(f"{source}备份")
             else:
                 result_text = "失败"
                 detail_text = entry.get("error", "")
@@ -840,7 +842,7 @@ class MainWindow(QMainWindow):
 
     def _start_scheduler(self):
         if self.config.interval_minutes > 0:
-            self.scheduler.start(self.config.interval_minutes, self._do_backup)
+            self.scheduler.start(self.config.interval_minutes, lambda: self._do_backup(source='定时'))
             self.config.scheduler_enabled = True
             self.config.save()
             self._update_next_backup_time()
@@ -934,7 +936,7 @@ class MainWindow(QMainWindow):
         self._tray.setIcon(self.style().standardIcon(
             QStyle.StandardPixmap.SP_DriveHDIcon
         ))
-        self._tray.setToolTip("AutoBackup v1.0.2")
+        self._tray.setToolTip("AutoBackup v1.1.0")
 
         self._tray_menu = QMenu()
         show_action = self._tray_menu.addAction("显示主窗口")

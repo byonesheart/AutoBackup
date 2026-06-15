@@ -1,4 +1,4 @@
-﻿"""AutoBackup v1.0.2 配置管理"""
+﻿"""AutoBackup v1.1.0 配置管理"""
 import json
 import os
 import sys

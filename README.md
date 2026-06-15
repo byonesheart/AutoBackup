@@ -1,4 +1,4 @@
-﻿# AutoBackup v1.0.2
+﻿# AutoBackup v1.1.0
 
 一款 Windows 桌面自动备份应用，支持文件夹和单文件的 ZIP 压缩备份、定时备份、AES 加密、一键恢复等功能。
 
@@ -129,6 +129,11 @@ python main.py --minimized  # 最小化启动（托盘常驻）
 ---
 
 ## 更新日志
+
+### v1.1.0 (2026-06-16)
+- 备份记录详情中标注备份来源（手动备份 / 定时备份）
+- 重构单实例检测，改用 AllowSetForegroundWindow + 激活文件机制
+- 配置文件保存至 %APPDATA% 目录，保持 exe 目录整洁
 
 ### v1.0.2 (2026-06-15)
 - 修复打包后配置文件丢失问题（config.json / backup_log.json 保存到 exe 同级目录）
