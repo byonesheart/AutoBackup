@@ -53,7 +53,7 @@ class MainWindow(QMainWindow):
         self._init_floating_button()
 
         if self.config.auto_backup_on_start and not start_minimized:
-            QTimer.singleShot(1000, self._do_backup)
+            QTimer.singleShot(1000, lambda: self._do_backup(source="定时"))
 
         if self.config.scheduler_enabled and self.config.interval_minutes > 0:
             self._start_scheduler()
@@ -752,7 +752,8 @@ class MainWindow(QMainWindow):
                         detail_parts.append("已加密")
                 if skipped:
                     detail_parts.append(f"跳过 {len(skipped)} 个锁定文件")
-                detail_parts.append(f"{source}备份")
+                if source != "手动":
+                    detail_parts.append(f"{source}备份")
                 detail_text = "，".join(detail_parts) if detail_parts else ""
             else:
                 result_text = "失败"
@@ -766,6 +767,15 @@ class MainWindow(QMainWindow):
             elif not entry.get("success", False):
                 detail_item.setToolTip(detail_text)
             self.hist_table.setItem(row, 5, detail_item)
+
+            if not entry.get("success", False):
+                for col in range(self.hist_table.columnCount()):
+                    item = self.hist_table.item(row, col)
+                    if item:
+                        item.setForeground(QBrush(QColor(220, 50, 50)))
+                btn_widget = self.hist_table.cellWidget(row, 0)
+                if btn_widget:
+                    btn_widget.setStyleSheet('color: rgb(220, 50, 50);')
 
     def _pick_destination(self):
         path = QFileDialog.getExistingDirectory(self, "选择备份存放位置")
