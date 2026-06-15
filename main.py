@@ -14,9 +14,8 @@ ACTIVATE_FILE = os.path.join(_LOCK_DIR, ".autobackup.activate")
 
 
 def _find_and_activate_window():
-    """查找已有窗口并强制激活（由新进程调用，有前台权限）"""
+    """查找已有窗口并激活（由新进程调用，有前台权限）"""
     user32 = ctypes.windll.user32
-    kernel32 = ctypes.windll.kernel32
 
     WNDENUMPROC = ctypes.WINFUNCTYPE(wintypes.BOOL, wintypes.HWND, wintypes.LPARAM)
     found_hwnd = []
@@ -32,7 +31,7 @@ def _find_and_activate_window():
         title = buf.value
         if title and "AutoBackup" in title:
             found_hwnd.append(hwnd)
-            return False  # stop enum
+            return False
         return True
 
     callback = WNDENUMPROC(enum_callback)
@@ -41,10 +40,13 @@ def _find_and_activate_window():
     if found_hwnd:
         hwnd = found_hwnd[0]
         SW_RESTORE = 9
+        VK_MENU = 0x12  # ALT key
 
         user32.ShowWindow(hwnd, SW_RESTORE)
+        # 模拟 ALT 按键绕过 Windows 前台锁定限制
+        user32.keybd_event(VK_MENU, 0, 0, 0)
         user32.SetForegroundWindow(hwnd)
-        user32.BringWindowToTop(hwnd)
+        user32.keybd_event(VK_MENU, 0, 2, 0)  # KEYEVENTF_KEYUP
         return True
     return False
 
@@ -82,11 +84,7 @@ def remove_lock_file():
 
 def main():
     if check_existing_instance():
-        # 新进程有前台权限，直接激活旧窗口
         _find_and_activate_window()
-        # 写激活文件作为 fallback
-        with open(ACTIVATE_FILE, "w") as f:
-            f.write(str(time.time()))
         sys.exit(0)
 
     write_lock_file()
