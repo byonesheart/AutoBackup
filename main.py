@@ -3,7 +3,6 @@ import sys
 import os
 import time
 import ctypes
-from ctypes import wintypes
 
 sys.path.insert(0, os.path.dirname(os.path.abspath(__file__)))
 
@@ -11,45 +10,6 @@ _LOCK_DIR = os.path.join(os.environ.get("TEMP", os.path.dirname(os.path.abspath(
 os.makedirs(_LOCK_DIR, exist_ok=True)
 LOCK_FILE = os.path.join(_LOCK_DIR, ".autobackup.lock")
 ACTIVATE_FILE = os.path.join(_LOCK_DIR, ".autobackup.activate")
-
-
-def _find_and_activate_window(target_pid):
-    """按 PID 精确查找已有窗口并激活"""
-    user32 = ctypes.windll.user32
-    kernel32 = ctypes.windll.kernel32
-
-    WNDENUMPROC = ctypes.WINFUNCTYPE(wintypes.BOOL, wintypes.HWND, wintypes.LPARAM)
-    found_hwnd = []
-
-    def enum_callback(hwnd, lparam):
-        if not user32.IsWindowVisible(hwnd):
-            return True
-        # 检查 PID
-        pid = wintypes.DWORD()
-        user32.GetWindowThreadProcessId(hwnd, ctypes.byref(pid))
-        if pid.value != target_pid:
-            return True
-        # 检查标题
-        length = user32.GetWindowTextLengthW(hwnd)
-        if length == 0:
-            return True
-        buf = ctypes.create_unicode_buffer(length + 1)
-        user32.GetWindowTextW(hwnd, buf, length + 1)
-        if buf.value and "AutoBackup" in buf.value:
-            found_hwnd.append(hwnd)
-            return False
-        return True
-
-    callback = WNDENUMPROC(enum_callback)
-    user32.EnumWindows(callback, 0)
-
-    if found_hwnd:
-        hwnd = found_hwnd[0]
-        SW_RESTORE = 9
-        user32.ShowWindow(hwnd, SW_RESTORE)
-        user32.SwitchToThisWindow(hwnd, True)
-        return True
-    return False
 
 
 def check_existing_instance():
@@ -86,8 +46,10 @@ def remove_lock_file():
 def main():
     existing_pid = check_existing_instance()
     if existing_pid:
-        _find_and_activate_window(existing_pid)
-        time.sleep(0.3)
+        # 授权旧进程前台权限，然后通知它自己激活
+        ctypes.windll.user32.AllowSetForegroundWindow(existing_pid)
+        with open(ACTIVATE_FILE, "w") as f:
+            f.write(str(time.time()))
         sys.exit(0)
 
     write_lock_file()
