@@ -13,9 +13,10 @@ LOCK_FILE = os.path.join(_LOCK_DIR, ".autobackup.lock")
 ACTIVATE_FILE = os.path.join(_LOCK_DIR, ".autobackup.activate")
 
 
-def _find_and_activate_window():
-    """查找已有窗口并激活（由新进程调用，有前台权限）"""
+def _find_and_activate_window(target_pid):
+    """按 PID 精确查找已有窗口并激活"""
     user32 = ctypes.windll.user32
+    kernel32 = ctypes.windll.kernel32
 
     WNDENUMPROC = ctypes.WINFUNCTYPE(wintypes.BOOL, wintypes.HWND, wintypes.LPARAM)
     found_hwnd = []
@@ -23,13 +24,18 @@ def _find_and_activate_window():
     def enum_callback(hwnd, lparam):
         if not user32.IsWindowVisible(hwnd):
             return True
+        # 检查 PID
+        pid = wintypes.DWORD()
+        user32.GetWindowThreadProcessId(hwnd, ctypes.byref(pid))
+        if pid.value != target_pid:
+            return True
+        # 检查标题
         length = user32.GetWindowTextLengthW(hwnd)
         if length == 0:
             return True
         buf = ctypes.create_unicode_buffer(length + 1)
         user32.GetWindowTextW(hwnd, buf, length + 1)
-        title = buf.value
-        if title and "AutoBackup" in title:
+        if buf.value and "AutoBackup" in buf.value:
             found_hwnd.append(hwnd)
             return False
         return True
@@ -39,34 +45,16 @@ def _find_and_activate_window():
 
     if found_hwnd:
         hwnd = found_hwnd[0]
-        kernel32 = ctypes.windll.kernel32
         SW_RESTORE = 9
-
+        user32.AllowSetForegroundWindow(-1)
         user32.ShowWindow(hwnd, SW_RESTORE)
-
-        # AttachThreadInput: 把本进程线程挂到前台线程上，以绕过前台锁定
-        fg_hwnd = user32.GetForegroundWindow()
-        fg_thread_id = user32.GetWindowThreadProcessId(fg_hwnd, None)
-        target_thread_id = user32.GetWindowThreadProcessId(hwnd, None)
-        our_thread_id = kernel32.GetCurrentThreadId()
-
-        if fg_thread_id and fg_thread_id != our_thread_id:
-            user32.AttachThreadInput(our_thread_id, fg_thread_id, True)
-        if target_thread_id and target_thread_id != our_thread_id:
-            user32.AttachThreadInput(our_thread_id, target_thread_id, True)
-
         user32.SetForegroundWindow(hwnd)
-
-        if fg_thread_id and fg_thread_id != our_thread_id:
-            user32.AttachThreadInput(our_thread_id, fg_thread_id, False)
-        if target_thread_id and target_thread_id != our_thread_id:
-            user32.AttachThreadInput(our_thread_id, target_thread_id, False)
         return True
     return False
 
 
 def check_existing_instance():
-    """检查是否已有实例运行"""
+    """检查是否已有实例运行，返回 PID 或 None"""
     if os.path.exists(LOCK_FILE):
         try:
             with open(LOCK_FILE, "r") as f:
@@ -75,10 +63,10 @@ def check_existing_instance():
             handle = kernel32.OpenProcess(0x1000, False, pid)
             if handle:
                 kernel32.CloseHandle(handle)
-                return True
+                return pid
         except:
             pass
-    return False
+    return None
 
 
 def write_lock_file():
@@ -97,8 +85,9 @@ def remove_lock_file():
 
 
 def main():
-    if check_existing_instance():
-        _find_and_activate_window()
+    existing_pid = check_existing_instance()
+    if existing_pid:
+        _find_and_activate_window(existing_pid)
         time.sleep(0.3)
         sys.exit(0)
 
