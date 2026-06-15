@@ -1,6 +1,7 @@
 ﻿"""AutoBackup v1.0.1 配置管理"""
 import json
 import os
+import sys
 import threading
 
 DEFAULT_CONFIG = {
@@ -21,7 +22,10 @@ DEFAULT_CONFIG = {
     }
 }
 
-BASE_DIR = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
+if getattr(sys, "frozen", False):
+    BASE_DIR = os.path.dirname(sys.executable)
+else:
+    BASE_DIR = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
 CONFIG_PATH = os.path.join(BASE_DIR, "config.json")
 LOG_PATH = os.path.join(BASE_DIR, "backup_log.json")
 
