@@ -99,6 +99,7 @@ def remove_lock_file():
 def main():
     if check_existing_instance():
         _find_and_activate_window()
+        time.sleep(0.3)
         sys.exit(0)
 
     write_lock_file()
