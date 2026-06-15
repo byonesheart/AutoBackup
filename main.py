@@ -39,14 +39,28 @@ def _find_and_activate_window():
 
     if found_hwnd:
         hwnd = found_hwnd[0]
+        kernel32 = ctypes.windll.kernel32
         SW_RESTORE = 9
-        VK_MENU = 0x12  # ALT key
 
         user32.ShowWindow(hwnd, SW_RESTORE)
-        # 模拟 ALT 按键绕过 Windows 前台锁定限制
-        user32.keybd_event(VK_MENU, 0, 0, 0)
+
+        # AttachThreadInput: 把本进程线程挂到前台线程上，以绕过前台锁定
+        fg_hwnd = user32.GetForegroundWindow()
+        fg_thread_id = kernel32.GetWindowThreadProcessId(fg_hwnd, None)
+        target_thread_id = kernel32.GetWindowThreadProcessId(hwnd, None)
+        our_thread_id = kernel32.GetCurrentThreadId()
+
+        if fg_thread_id and fg_thread_id != our_thread_id:
+            user32.AttachThreadInput(our_thread_id, fg_thread_id, True)
+        if target_thread_id and target_thread_id != our_thread_id:
+            user32.AttachThreadInput(our_thread_id, target_thread_id, True)
+
         user32.SetForegroundWindow(hwnd)
-        user32.keybd_event(VK_MENU, 0, 2, 0)  # KEYEVENTF_KEYUP
+
+        if fg_thread_id and fg_thread_id != our_thread_id:
+            user32.AttachThreadInput(our_thread_id, fg_thread_id, False)
+        if target_thread_id and target_thread_id != our_thread_id:
+            user32.AttachThreadInput(our_thread_id, target_thread_id, False)
         return True
     return False
 
