@@ -859,6 +859,7 @@ class MainWindow(QMainWindow):
             self._update_next_backup_time()
             if self.floating_button:
                 self.floating_button.set_scheduler_state(True)
+            self._update_schedule_button()
 
     def _stop_scheduler(self):
         self.scheduler.stop()
@@ -867,6 +868,7 @@ class MainWindow(QMainWindow):
         self.next_backup_label.setText("")
         if self.floating_button:
             self.floating_button.set_scheduler_state(False)
+            self._update_schedule_button()
 
     def _update_next_backup_time(self):
         if self.scheduler.is_running and self.config.interval_minutes > 0:
