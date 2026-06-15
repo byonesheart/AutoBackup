@@ -1,4 +1,4 @@
-﻿"""AutoBackup v1.0.1 主窗口"""
+﻿"""AutoBackup v1.0.2 主窗口"""
 import ctypes
 import os
 import sys
@@ -36,7 +36,7 @@ class MainWindow(QMainWindow):
         self._scheduler_menu_action = None
         self._show_password = False
 
-        self.setWindowTitle("AutoBackup v1.0.1")
+        self.setWindowTitle("AutoBackup v1.0.2")
         self.setMinimumSize(680, 600)
         self._restore_geometry()
 
@@ -932,7 +932,7 @@ class MainWindow(QMainWindow):
         self._tray.setIcon(self.style().standardIcon(
             QStyle.StandardPixmap.SP_DriveHDIcon
         ))
-        self._tray.setToolTip("AutoBackup v1.0.1")
+        self._tray.setToolTip("AutoBackup v1.0.2")
 
         self._tray_menu = QMenu()
         show_action = self._tray_menu.addAction("显示主窗口")
