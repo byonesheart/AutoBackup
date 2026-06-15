@@ -46,8 +46,8 @@ def _find_and_activate_window():
 
         # AttachThreadInput: 把本进程线程挂到前台线程上，以绕过前台锁定
         fg_hwnd = user32.GetForegroundWindow()
-        fg_thread_id = kernel32.GetWindowThreadProcessId(fg_hwnd, None)
-        target_thread_id = kernel32.GetWindowThreadProcessId(hwnd, None)
+        fg_thread_id = user32.GetWindowThreadProcessId(fg_hwnd, None)
+        target_thread_id = user32.GetWindowThreadProcessId(hwnd, None)
         our_thread_id = kernel32.GetCurrentThreadId()
 
         if fg_thread_id and fg_thread_id != our_thread_id:
