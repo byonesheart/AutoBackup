@@ -20,7 +20,6 @@ from core.engine import backup_all, restore_backup
 from core.scheduler import BackupScheduler
 from ui.floating_button import FloatingButton
 
-ACTIVATE_FILE = os.path.join(os.environ.get("TEMP", os.path.dirname(os.path.dirname(os.path.abspath(__file__)))), "AutoBackup", ".autobackup.activate")
 
 
 class MainWindow(QMainWindow):
@@ -44,9 +43,6 @@ class MainWindow(QMainWindow):
         self._load_config_to_ui()
         self._connect_signals()
 
-        self._activation_timer = QTimer(self)
-        self._activation_timer.timeout.connect(self._check_activation_file)
-        self._activation_timer.start(1000)
 
         self._init_floating_button()
 
@@ -385,14 +381,6 @@ class MainWindow(QMainWindow):
             self.password_edit.setEchoMode(QLineEdit.Password)
             self.toggle_password_btn.setText("显示")
         self._refresh_history_table()
-
-    def _check_activation_file(self):
-        if os.path.exists(ACTIVATE_FILE):
-            try:
-                os.remove(ACTIVATE_FILE)
-            except:
-                pass
-            self.force_activate()
 
     def _on_floating_btn_changed(self, state):
         self.config.show_floating_button = state == Qt.CheckState.Checked.value
