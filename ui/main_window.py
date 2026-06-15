@@ -753,6 +753,7 @@ class MainWindow(QMainWindow):
                 if skipped:
                     detail_parts.append(f"跳过 {len(skipped)} 个锁定文件")
                 detail_parts.append(f"{source}备份")
+                detail_text = "，".join(detail_parts) if detail_parts else ""
             else:
                 result_text = "失败"
                 detail_text = entry.get("error", "")
