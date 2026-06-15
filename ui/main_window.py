@@ -53,7 +53,7 @@ class MainWindow(QMainWindow):
         self._init_floating_button()
 
         if self.config.auto_backup_on_start and not start_minimized:
-            QTimer.singleShot(1000, lambda: self._do_backup(source="定时"))
+            QTimer.singleShot(1000, lambda: self._do_backup(source="自动"))
 
         if self.config.scheduler_enabled and self.config.interval_minutes > 0:
             self._start_scheduler()
@@ -366,7 +366,7 @@ class MainWindow(QMainWindow):
         self.add_btn.clicked.connect(self._add_source)
         self.remove_btn.clicked.connect(self._remove_source)
         self.pause_btn.clicked.connect(self._toggle_source)
-        self.backup_btn.clicked.connect(self._do_backup)
+        self.backup_btn.clicked.connect(lambda: self._do_backup())
         self.remove_hist_btn.clicked.connect(self._remove_selected_history)
         self.clear_hist_btn.clicked.connect(self._clear_history)
         self.dest_edit.textChanged.connect(self._on_dest_changed)
@@ -853,7 +853,7 @@ class MainWindow(QMainWindow):
 
     def _start_scheduler(self):
         if self.config.interval_minutes > 0:
-            self.scheduler.start(self.config.interval_minutes, lambda: self._do_backup(source='定时'))
+            self.scheduler.start(self.config.interval_minutes, lambda: self._do_backup(source='自动'))
             self.config.scheduler_enabled = True
             self.config.save()
             self._update_next_backup_time()
@@ -953,7 +953,7 @@ class MainWindow(QMainWindow):
         show_action = self._tray_menu.addAction("显示主窗口")
         show_action.triggered.connect(self.force_activate)
         backup_action = self._tray_menu.addAction("立即备份")
-        backup_action.triggered.connect(self._do_backup)
+        backup_action.triggered.connect(lambda: self._do_backup())
         self._tray_menu.addSeparator()
         self._scheduler_menu_action = self._tray_menu.addAction("启动定时")
         self._scheduler_menu_action.triggered.connect(self._toggle_scheduler_from_menu)
