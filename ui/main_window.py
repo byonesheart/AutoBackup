@@ -1,4 +1,5 @@
-﻿"""AutoBackup v1.0.0 主窗口"""
+﻿"""AutoBackup v1.0.1 主窗口"""
+import ctypes
 import os
 import sys
 import winreg
@@ -19,7 +20,7 @@ from core.engine import backup_all, restore_backup
 from core.scheduler import BackupScheduler
 from ui.floating_button import FloatingButton
 
-ACTIVATE_FILE = os.path.join(os.path.dirname(os.path.dirname(os.path.abspath(__file__))), ".autobackup.activate")
+ACTIVATE_FILE = os.path.join(os.environ.get("TEMP", os.path.dirname(os.path.dirname(os.path.abspath(__file__)))), "AutoBackup", ".autobackup.activate")
 
 
 class MainWindow(QMainWindow):
@@ -35,7 +36,7 @@ class MainWindow(QMainWindow):
         self._scheduler_menu_action = None
         self._show_password = False
 
-        self.setWindowTitle("AutoBackup v1.0.0")
+        self.setWindowTitle("AutoBackup v1.0.1")
         self.setMinimumSize(680, 600)
         self._restore_geometry()
 
@@ -931,7 +932,7 @@ class MainWindow(QMainWindow):
         self._tray.setIcon(self.style().standardIcon(
             QStyle.StandardPixmap.SP_DriveHDIcon
         ))
-        self._tray.setToolTip("AutoBackup v1.0.0")
+        self._tray.setToolTip("AutoBackup v1.0.1")
 
         self._tray_menu = QMenu()
         show_action = self._tray_menu.addAction("显示主窗口")
@@ -963,8 +964,17 @@ class MainWindow(QMainWindow):
 
     def force_activate(self):
         self.showNormal()
-        self.activateWindow()
         self.raise_()
+        self.activateWindow()
+        if sys.platform == "win32":
+            try:
+                hwnd = int(self.winId())
+                ctypes.windll.user32.ShowWindow(hwnd, 9)
+                ctypes.windll.user32.SetWindowPos(hwnd, -1, 0, 0, 0, 0, 0x0001 | 0x0002)
+                ctypes.windll.user32.SetWindowPos(hwnd, -2, 0, 0, 0, 0, 0x0001 | 0x0002)
+                ctypes.windll.user32.SetForegroundWindow(hwnd)
+            except Exception:
+                pass
         if self.floating_button:
             self.floating_button.set_backup_failed(False)
 
@@ -980,7 +990,6 @@ class MainWindow(QMainWindow):
             if self.floating_button:
                 self.floating_button.close()
             event.accept()
-
     def _real_quit(self):
         self._quitting = True
         self.scheduler.stop()

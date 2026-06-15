@@ -1,0 +1,8 @@
+﻿config.json
+backup_log.json
+.autobackup.lock
+.autobackup.activate
+build/
+dist/
+*.pyc
+__pycache__/

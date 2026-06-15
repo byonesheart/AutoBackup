@@ -1,4 +1,4 @@
-﻿"""AutoBackup v1.0.0 配置管理"""
+﻿"""AutoBackup v1.0.1 配置管理"""
 import json
 import os
 import threading

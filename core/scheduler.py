@@ -1,4 +1,4 @@
-﻿"""AutoBackup v1.0.0 定时调度器"""
+﻿"""AutoBackup v1.0.1 定时调度器"""
 from PySide6.QtCore import QTimer
 
 
