@@ -46,9 +46,8 @@ def _find_and_activate_window(target_pid):
     if found_hwnd:
         hwnd = found_hwnd[0]
         SW_RESTORE = 9
-        user32.AllowSetForegroundWindow(-1)
         user32.ShowWindow(hwnd, SW_RESTORE)
-        user32.SetForegroundWindow(hwnd)
+        user32.SwitchToThisWindow(hwnd, True)
         return True
     return False
 
