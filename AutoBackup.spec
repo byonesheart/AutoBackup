@@ -22,7 +22,7 @@ exe = EXE(
     a.binaries,
     a.datas,
     [],
-    name='AutoBackup_v1.1.0',
+    name='AutoBackup_v1.1.1',
     debug=False,
     bootloader_ignore_signals=False,
     strip=False,

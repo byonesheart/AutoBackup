@@ -85,7 +85,7 @@ def cmd_status(args):
 
 
 def parse_args(argv=None):
-    parser = argparse.ArgumentParser(prog="AutoBackup", description="AutoBackup v1.1.0 自动备份工具")
+    parser = argparse.ArgumentParser(prog="AutoBackup", description="AutoBackup v1.1.1 自动备份工具")
     sub = parser.add_subparsers(dest="command", help="子命令")
 
     sub.add_parser("run", help="立即执行一次备份")

@@ -1,8 +1,7 @@
-﻿"""AutoBackup v1.1.0 主窗口"""
+﻿"""AutoBackup v1.1.1 主窗口"""
 import ctypes
 import os
 import sys
-import winreg
 from datetime import datetime, timedelta
 
 from PySide6.QtWidgets import (
@@ -37,7 +36,7 @@ class MainWindow(QMainWindow):
         self._scheduler_menu_action = None
         self._show_password = False
 
-        self.setWindowTitle("AutoBackup v1.1.0")
+        self.setWindowTitle("AutoBackup v1.1.1")
         self.setMinimumSize(680, 600)
         self._restore_geometry()
 
@@ -912,32 +911,35 @@ class MainWindow(QMainWindow):
         self.config.save()
 
     def _set_system_autostart(self, enable):
-        key_path = r"Software\Microsoft\Windows\CurrentVersion\Run"
-        try:
-            key = winreg.OpenKey(
-                winreg.HKEY_CURRENT_USER, key_path, 0,
-                winreg.KEY_SET_VALUE | winreg.KEY_QUERY_VALUE
-            )
-        except OSError:
-            return
+        import subprocess
+        shortcut_dir = os.path.join(os.environ["APPDATA"],
+            "Microsoft", "Windows", "Start Menu", "Programs", "Startup")
+        shortcut_path = os.path.join(shortcut_dir, "AutoBackup.lnk")
 
-        try:
-            if enable:
-                if getattr(sys, "frozen", False):
-                    cmd = f"\"{sys.executable}\" --minimized"
-                else:
-                    main_script = os.path.abspath(sys.argv[0])
-                    pythonw = sys.executable.replace("python.exe", "pythonw.exe")
-                    cmd = f"\"{pythonw}\" \"{main_script}\" --minimized"
-                winreg.SetValueEx(key, "AutoBackup", 0, winreg.REG_SZ, cmd)
+        if enable:
+            if getattr(sys, "frozen", False):
+                target = sys.executable
+                args = "--minimized"
+                workdir = os.path.dirname(target)
             else:
-                try:
-                    winreg.DeleteValue(key, "AutoBackup")
-                except FileNotFoundError:
-                    pass
-        finally:
-            winreg.CloseKey(key)
+                target = sys.executable.replace("python.exe", "pythonw.exe")
+                main_script = os.path.abspath(sys.argv[0])
+                args = f'"{main_script}" --minimized'
+                workdir = os.path.dirname(main_script)
 
+            os.makedirs(shortcut_dir, exist_ok=True)
+            ps_cmd = (
+                "$ws = New-Object -ComObject WScript.Shell; "
+                f"$sc = $ws.CreateShortcut('{shortcut_path}'); "
+                f"$sc.TargetPath = '{target}'; "
+                f"$sc.Arguments = '{args}'; "
+                f"$sc.WorkingDirectory = '{workdir}'; "
+                "$sc.Save()"
+            )
+            subprocess.Popen(["powershell", "-Command", ps_cmd], creationflags=subprocess.CREATE_NO_WINDOW)
+        else:
+            if os.path.exists(shortcut_path):
+                os.remove(shortcut_path)
     def _show_tray_msg(self, title, msg):
         if self._tray and self._tray.supportsMessages():
             self._tray.showMessage(
@@ -949,7 +951,7 @@ class MainWindow(QMainWindow):
         self._tray.setIcon(self.style().standardIcon(
             QStyle.StandardPixmap.SP_DriveHDIcon
         ))
-        self._tray.setToolTip("AutoBackup v1.1.0")
+        self._tray.setToolTip("AutoBackup v1.1.1")
 
         self._tray_menu = QMenu()
         show_action = self._tray_menu.addAction("显示主窗口")
