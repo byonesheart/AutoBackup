@@ -1,4 +1,4 @@
-﻿"""AutoBackup v1.1.1 配置管理"""
+﻿"""AutoBackup v1.2.0 配置管理"""
 import json
 import os
 import sys
@@ -8,6 +8,7 @@ DEFAULT_CONFIG = {
     "destination": "",
     "sources": [],
     "interval_minutes": 60,
+    "max_backups": 50,
     "auto_backup_on_start": False,
     "auto_start_with_system": False,
     "show_floating_button": False,
@@ -85,6 +86,16 @@ class Config:
     @interval_minutes.setter
     def interval_minutes(self, value):
         self.set("interval_minutes", value)
+
+    @property
+    def max_backups(self):
+        return self.get("max_backups", 50)
+
+    @max_backups.setter
+    def max_backups(self, value):
+        if type(value) is not int or value < 1:
+            raise ValueError("最大备份数量必须是大于 0 的整数")
+        self.set("max_backups", value)
 
     @property
     def auto_backup_on_start(self):

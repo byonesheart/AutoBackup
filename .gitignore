@@ -6,3 +6,6 @@ build/
 dist/
 *.pyc
 __pycache__/
+*.exe
+*.zip
+.venv/

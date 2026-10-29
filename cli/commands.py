@@ -26,7 +26,7 @@ def cmd_run(args):
 
     print("正在备份...")
     now_str = datetime.now().strftime("%Y-%m-%d %H:%M:%S")
-    results = backup_all(sources, dest)
+    results = backup_all(sources, dest, max_backups=config.max_backups)
 
     success_count = 0
     for r in results:
@@ -74,6 +74,7 @@ def cmd_status(args):
     data = config.to_dict()
     print(f"备份存放位置: {data['destination'] or '(未设置)'}")
     print(f"定时间隔: {data['interval_minutes']} 分钟")
+    print(f"每个文件或文件夹最大备份数量: {config.max_backups}")
     print(f"开机自动备份: {'是' if data['auto_backup_on_start'] else '否'}")
     print(f"开机自启动: {'是' if data['auto_start_with_system'] else '否'}")
     print(f"待备份文件夹 ({len(data['sources'])} 个):")
@@ -85,7 +86,7 @@ def cmd_status(args):
 
 
 def parse_args(argv=None):
-    parser = argparse.ArgumentParser(prog="AutoBackup", description="AutoBackup v1.1.1 自动备份工具")
+    parser = argparse.ArgumentParser(prog="AutoBackup", description="AutoBackup v1.2.0 自动备份工具")
     sub = parser.add_subparsers(dest="command", help="子命令")
 
     sub.add_parser("run", help="立即执行一次备份")

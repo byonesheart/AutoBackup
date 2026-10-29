@@ -1,5 +1,6 @@
-﻿"""AutoBackup v1.1.1 备份引擎"""
+﻿"""AutoBackup v1.2.0 备份引擎"""
 import os
+import re
 import zipfile
 from datetime import datetime
 
@@ -10,10 +11,12 @@ except ImportError:
     HAS_PYZIPPER = False
 
 
-def backup_source(source_path, dest_dir, password=None):
+def backup_source(source_path, dest_dir, password=None, max_backups=50):
     """将 source_path（文件或文件夹）压缩成 ZIP 文件保存到 dest_dir。
     返回 (zip_path, skipped_files)，失败返回 (None, [])。
     """
+    if type(max_backups) is not int or max_backups < 1:
+        raise ValueError("最大备份数量必须是大于 0 的整数")
     source_path = os.path.normpath(source_path)
     
     is_file = os.path.isfile(source_path)
@@ -35,6 +38,9 @@ def backup_source(source_path, dest_dir, password=None):
     timestamp = datetime.now().strftime("%Y%m%d_%H%M%S")
     zip_name = f"{source_name}_{timestamp}.zip"
     zip_path = os.path.join(backup_folder, zip_name)
+    if os.path.exists(zip_path):
+        timestamp = datetime.now().strftime("%Y%m%d_%H%M%S_%f")
+        zip_path = os.path.join(backup_folder, f"{source_name}_{timestamp}.zip")
 
     skipped = []
     
@@ -72,7 +78,23 @@ def backup_source(source_path, dest_dir, password=None):
                         except OSError:
                             skipped.append(file_path)
 
+    if not skipped:
+        _remove_old_backups(backup_folder, source_name, max_backups, zip_path)
     return zip_path, skipped
+
+
+def _remove_old_backups(backup_folder, source_name, max_backups, current_zip):
+    """仅清理当前源名称对应的备份，按文件名中的时间保留最新版本。"""
+    pattern = re.compile(rf"{re.escape(source_name)}_(\d{{8}}_\d{{6}}(?:_\d{{6}})?)\.zip")
+    backups = []
+    with os.scandir(backup_folder) as entries:
+        for entry in entries:
+            match = pattern.fullmatch(entry.name)
+            if match and entry.is_file(follow_symlinks=False):
+                backups.append((entry.path == current_zip, match.group(1), entry.path))
+    backups.sort(reverse=True)
+    for _, _, path in backups[max_backups:]:
+        os.remove(path)
 
 
 def restore_backup(zip_path, dest_dir, password=None):
@@ -107,7 +129,7 @@ def restore_backup(zip_path, dest_dir, password=None):
         return False, f"恢复失败: {str(e)}"
 
 
-def backup_all(sources, dest_dir, password=None):
+def backup_all(sources, dest_dir, password=None, max_backups=50):
     """遍历 sources 中已启用的项目执行备份。
     返回结果列表 [{"path", "success", "zip_path", "skipped", "error", "is_file"}]
     """
@@ -135,7 +157,7 @@ def backup_all(sources, dest_dir, password=None):
             })
             continue
         try:
-            zip_path, skipped = backup_source(path, dest_dir, password)
+            zip_path, skipped = backup_source(path, dest_dir, password, max_backups)
             results.append({
                 "path": path,
                 "success": True,

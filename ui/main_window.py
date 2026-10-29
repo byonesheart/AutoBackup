@@ -1,4 +1,4 @@
-﻿"""AutoBackup v1.1.1 主窗口"""
+﻿"""AutoBackup v1.2.0 主窗口"""
 import ctypes
 import os
 import sys
@@ -36,7 +36,7 @@ class MainWindow(QMainWindow):
         self._scheduler_menu_action = None
         self._show_password = False
 
-        self.setWindowTitle("AutoBackup v1.1.1")
+        self.setWindowTitle("AutoBackup v1.2.0")
         self.setMinimumSize(680, 600)
         self._restore_geometry()
 
@@ -296,6 +296,16 @@ class MainWindow(QMainWindow):
         interval_layout.addStretch()
         settings_layout.addWidget(interval_group)
 
+        retention_group = QGroupBox("备份保留")
+        retention_layout = QHBoxLayout(retention_group)
+        retention_layout.addWidget(QLabel("每个文件或文件夹最大备份数量："))
+        self.max_backups_spin = QSpinBox()
+        self.max_backups_spin.setRange(1, 2147483647)
+        self.max_backups_spin.setToolTip("完整备份成功后，自动删除超出数量的最早备份")
+        retention_layout.addWidget(self.max_backups_spin)
+        retention_layout.addStretch()
+        settings_layout.addWidget(retention_group)
+
         password_group = QGroupBox("备份加密")
         password_layout = QHBoxLayout(password_group)
         password_layout.addWidget(QLabel("密码："))
@@ -351,6 +361,7 @@ class MainWindow(QMainWindow):
     def _load_config_to_ui(self):
         self.dest_edit.setText(self.config.destination)
         self.interval_spin.setValue(self.config.interval_minutes)
+        self.max_backups_spin.setValue(self.config.max_backups)
         self.autostart_cb.setChecked(self.config.auto_start_with_system)
         self.autobackup_cb.setChecked(self.config.auto_backup_on_start)
         self.floating_btn_cb.setChecked(self.config.show_floating_button)
@@ -370,6 +381,7 @@ class MainWindow(QMainWindow):
         self.clear_hist_btn.clicked.connect(self._clear_history)
         self.dest_edit.textChanged.connect(self._on_dest_changed)
         self.interval_spin.valueChanged.connect(self._on_interval_changed)
+        self.max_backups_spin.valueChanged.connect(self._on_max_backups_changed)
         self.autostart_cb.stateChanged.connect(self._on_autostart_changed)
         self.autobackup_cb.stateChanged.connect(self._on_autobackup_changed)
         self.floating_btn_cb.stateChanged.connect(self._on_floating_btn_changed)
@@ -610,7 +622,8 @@ class MainWindow(QMainWindow):
             finished = Signal()
 
             def run(self_thread):
-                results = backup_all(self.config.sources, self.config.destination, password)
+                results = backup_all(self.config.sources, self.config.destination, password,
+                                     self.config.max_backups)
                 for result in results:
                     self.config.update_source_status(
                         result["path"], 
@@ -900,6 +913,9 @@ class MainWindow(QMainWindow):
             self.scheduler.update_interval(value)
             self._update_next_backup_time()
 
+    def _on_max_backups_changed(self, value):
+        self.config.max_backups = value
+
     def _on_autostart_changed(self, state):
         enabled = state == Qt.CheckState.Checked.value
         self.config.auto_start_with_system = enabled
@@ -951,7 +967,7 @@ class MainWindow(QMainWindow):
         self._tray.setIcon(self.style().standardIcon(
             QStyle.StandardPixmap.SP_DriveHDIcon
         ))
-        self._tray.setToolTip("AutoBackup v1.1.1")
+        self._tray.setToolTip("AutoBackup v1.2.0")
 
         self._tray_menu = QMenu()
         show_action = self._tray_menu.addAction("显示主窗口")
