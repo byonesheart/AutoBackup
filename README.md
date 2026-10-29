@@ -18,6 +18,7 @@
 
 - [GitHub Release v1.2.0](https://github.com/byonesheart/AutoBackup/releases/tag/v1.2.0)
 - [百度网盘（永久分享）](https://pan.baidu.com/s/1EW1BR3wwWQvr7I3k5jnenQ)，提取码：`t2ao`
+- [夸克网盘（永久分享）](https://pan.quark.cn/s/672a4a1c551e)，提取码：`XpKp`
 
 网盘发布目录：`/项目/AutoBackup`。下载后可使用 `SHA256SUMS.txt` 校验文件。
 
@@ -80,10 +81,10 @@
 ### 命令行接口
 ```bash
 # 立即执行一次备份
-AutoBackup.exe run
+AutoBackup_v1.2.0.exe run
 
 # 查看当前配置
-AutoBackup.exe status
+AutoBackup_v1.2.0.exe status
 ```
 
 ---
