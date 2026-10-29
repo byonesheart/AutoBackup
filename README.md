@@ -10,6 +10,8 @@
 
 ## 快速开始
 
+视频演示：[在 B 站观看](https://www.bilibili.com/video/BV11jjV6oEeS/)。
+
 从 [GitHub Releases](https://github.com/byonesheart/AutoBackup/releases/latest) 下载 `AutoBackup_v1.2.0.exe`，双击即可运行，无需安装 Python 或其他依赖。
 
 新版会沿用 `%APPDATA%\AutoBackup\` 中的现有设置；旧配置默认补充最大备份数量 50。详细变更见 [CHANGELOG.md](CHANGELOG.md)。
