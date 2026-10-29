@@ -14,6 +14,13 @@
 
 新版会沿用 `%APPDATA%\AutoBackup\` 中的现有设置；旧配置默认补充最大备份数量 50。详细变更见 [CHANGELOG.md](CHANGELOG.md)。
 
+### 下载地址
+
+- [GitHub Release v1.2.0](https://github.com/byonesheart/AutoBackup/releases/tag/v1.2.0)
+- [百度网盘（永久分享）](https://pan.baidu.com/s/1EW1BR3wwWQvr7I3k5jnenQ)，提取码：`t2ao`
+
+网盘发布目录：`/项目/AutoBackup`。下载后可使用 `SHA256SUMS.txt` 校验文件。
+
 ---
 
 ## 功能一览
